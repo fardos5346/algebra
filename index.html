@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עולם האלגברה: אתגר חישוב משמאל לימין</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <header class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">📐</span>
+                <h1 id="nav-title" class="text-xl font-black tracking-tight text-indigo-700">עולם האלגברה האלגנטי</h1>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center md:justify-end gap-4 w-full md:w-auto">
+                <div id="lang-buttons-container" class="flex bg-gray-100 p-1 rounded-xl border border-gray-200 shadow-3xs">
+                    <button onclick="changeLanguage('he')" id="btn-lang-he" class="px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer">עברית</button>
+                    <button onclick="changeLanguage('en')" id="btn-lang-en" class="px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer">English</button>
+                    <button onclick="changeLanguage('ar')" id="btn-lang-ar" class="px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer">العربية</button>
+                    <button onclick="changeLanguage('ru')" id="btn-lang-ru" class="px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer">Русский</button>
+                </div>
+
+                <div class="bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-indigo-100 shadow-2xs flex items-center gap-1.5">
+                    <span id="score-label">ניקוד:</span> 
+                    <span id="current-score" class="text-indigo-900 text-base font-extrabold">0</span>/20
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl w-full mx-auto p-4 md:p-6 flex-grow space-y-8">
+        
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-xs p-6 border border-gray-200">
+                <h2 id="hist-title" class="text-lg font-bold mb-3 text-indigo-700 border-b pb-2">🏛️ היסטוריה של האלגברה</h2>
+                <p id="hist-text" class="text-sm text-gray-600 leading-relaxed"></p>
+            </div>
+            <div class="bg-indigo-900 rounded-xl shadow-xs p-6 text-indigo-100">
+                <h2 id="why-title" class="text-lg font-bold mb-3 border-b border-indigo-800 pb-2">🎒 למה לומדים את זה בבית הספר?</h2>
+                <p id="why-text" class="text-sm leading-relaxed"></p>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-xs p-6 border border-gray-200">
+            <h2 id="sample-title" class="text-lg font-bold mb-4 text-indigo-700 border-b pb-2">🌍 פתרון מודל בשלבים (משמאל לימין)</h2>
+            <div id="sample-container" class="space-y-4"></div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-xs p-6 border border-gray-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-4 gap-4">
+                <div>
+                    <h2 id="exercise-title" class="text-xl font-bold text-indigo-700">🧩 20 שאלות תרגול אלגבריות אינטראקטיביות</h2>
+                    <p id="exercise-subtitle" class="text-xs text-gray-400 mt-1">קחו דף ועט. פתרו כל משוואה משמאל לימין בצורה יסודית כדי להגיע לתשובה המדויקת.</p>
+                </div>
+                <button onclick="regenerateQuestions()" id="regen-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-2xs text-sm transition cursor-pointer">
+                    🔄 החלף שאלות ומצא אתגר חדש
+                </button>
+            </div>
+            
+            <div id="questions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+                </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-4 text-xs text-gray-400 bg-gray-100 border-t border-gray-200">
+        Algebra Educational Portal &copy; 2026
+    </footer>
+
+    <script>
+        // בנק שאלות מורחב ומעניין
+        const questionPool = {
+            en: [
+                { expr: "x + 14 = 42", ans: 28, hint: "Subtract 14 from both sides to isolate x." },
+                { expr: "y - 37 = 61", ans: 98, hint: "Add 37 to both sides to cancel out the subtraction." },
+                { expr: "8x = 72", ans: 9, hint: "Divide both sides by the coefficient 8." },
+                { expr: "13 - m = 5", ans: 8, hint: "Isolate m. Remember that 13 minus something equals 5." },
+                { expr: "4x + 7 = 39", ans: 8, hint: "Subtract 7 from both sides, then divide the result by 4." },
+                { expr: "\\frac{x}{2} + \\frac{x}{3} = 15", ans: 18, hint: "Multiply all terms by the common denominator 6 to clear the fractions." },
+                { expr: "\\frac{y}{4} - \\frac{y}{5} = 2", ans: 40, hint: "Multiply all terms by the common denominator 20 from left to right." },
+                { expr: "\\frac{2x}{3} = 8", ans: 12, hint: "Multiply by 3 first to clear the division, then divide by 2." },
+                { expr: "\\frac{m}{6} + 4 = 9", ans: 30, hint: "Subtract 4 first, then multiply the remaining result by 6." },
+                { expr: "\\frac{x}{2} + \\frac{x}{4} + \\frac{x}{8} = 7", ans: 8, hint: "Multiply every single term by the largest denominator 8 to remove fractions." },
+                { expr: "3(x + 4) = 27", ans: 5, hint: "Distribute the 3 into the parentheses, or divide the right side by 3 first." },
+                { expr: "5y - 3 = 2y + 12", ans: 5, hint: "Move 2y to the left side and move -3 to the right side on your paper." },
+                { expr: "10 - 2x = 4x - 20", ans: 5, hint: "Collect all x terms on one side and constants on the other." },
+                { expr: "2(3m - 1) = 16", ans: 3, hint: "Expand the bracket from left to right, then isolate the m term." },
+                { expr: "\\frac{x+2}{3} = 5", ans: 13, hint: "Multiply the right side by 3 first to clear the division, then isolate x." },
+                { expr: "x^2 - 9 = 40", ans: 7, hint: "Add 9 to both sides, then find the positive square root." },
+                { expr: "\\sqrt{x} + 5 = 12", ans: 49, hint: "Subtract 5 to isolate the square root, then square both sides." },
+                { expr: "7x = 0", ans: 0, hint: "What number multiplied by 7 yields exactly 0?" },
+                { expr: "x + x + 2x = 44", ans: 11, hint: "Combine all like terms on the left side first: 1x + 1x + 2x." },
+                { expr: "\\frac{12}{x} = 3", ans: 4, hint: "Think: 12 divided by what number equals 3?" },
+                { expr: "4(x - 2) = 2x + 10", ans: 9, hint: "Expand the brackets on the left side first, then re-arrange." },
+                { expr: "\\frac{2x - 5}{3} = 5", ans: 10, hint: "Multiply by 3 first, then add 5, then divide by 2." },
+                { expr: "x^2 + 11 = 36", ans: 5, hint: "Isolate x^2 first by subtracting 11, then take the square root." }
+            ],
+            he: [
+                { expr: "x + 14 = 42", ans: 28, hint: "נחסיר 14 משני האגפים כדי לבודד את x." },
+                { expr: "y - 37 = 61", ans: 98, hint: "נחבר 37 לשני האגפים כדי לבטל את פעולת החיסור." },
+                { expr: "8x = 72", ans: 9, hint: "נחלק את שני האגפים במקדם 8." },
+                { expr: "13 - m = 5", ans: 8, hint: "נבודד את m. זכור כי 13 פחות מספר מסוים שווה ל-5." },
+                { expr: "4x + 7 = 39", ans: 8, hint: "פתרון בשני שלבים: ראשית חסר 7 משני האגפים, ולאחר מכן חלק ב-4." },
+                { expr: "\\frac{x}{2} + \\frac{x}{3} = 15", ans: 18, hint: "נכפיל את כל איברי המשוואה במכנה המשותף 6 כדי להיפטר מהשברים." },
+                { expr: "\\frac{y}{4} - \\frac{y}{5} = 2", ans: 40, hint: "נכפיל את כל איברי המשוואה במכנה המשותף 20 משמאל לימין." },
+                { expr: "\\frac{2x}{3} = 8", ans: 12, hint: "נכפיל ב-3 תחילה כדי לבטל את קו השבר, ולאחר מכן נחלק ב-2." },
+                { expr: "\\frac{m}{6} + 4 = 9", ans: 30, hint: "נחסיר 4 תחילה, ולאחר מכן נכפיל את התוצאה שנותרה ב-6." },
+                { expr: "\\frac{x}{2} + \\frac{x}{4} + \\frac{x}{8} = 7", ans: 8, hint: "נכפיל את כל איברי המשוואה במכנה הגדול ביותר 8 כדי לנקות את השברים." },
+                { expr: "3(x + 4) = 27", ans: 5, hint: "נפתח סוגריים משמאל לימין או שנחלק את האגף הימני ב-3 תחילה." },
+                { expr: "5y - 3 = 2y + 12", ans: 5, hint: "רשום על דף: העבר את ה-2y לאגף שמאל ואת ה-3- לאגף ימין בשינוי סימן." },
+                { expr: "10 - 2x = 4x - 20", ans: 5, hint: "רכז את כל איברי ה-x באגף אחד ואת המספרים החופשיים באגף השני." },
+                { expr: "2(3m - 1) = 16", ans: 3, hint: "נפתח את הסוגריים על ידי מכפלה משמאל לימין, ולאחר מכן נבודד את m." },
+                { expr: "\\frac{x+2}{3} = 5", ans: 13, hint: "נבטל את המכנה על ידי מכפלת אגף ימין ב-3, ולאחר מכן נבודד את x." },
+                { expr: "x^2 - 9 = 40", ans: 7, hint: "נוסיף 9 לשני האגפים, ולאחר מכן נחלץ את השורש הריבועי החיובי." },
+                { expr: "\\sqrt{x} + 5 = 12", ans: 49, hint: "נחסיר 5 תחילה כדי לבודד את השורש, ולאחר מכן נעלה את שני האגפים בריבוע." },
+                { expr: "7x = 0", ans: 0, hint: "איזה מספר כשמכפילים אותו ב-7 נותן בדיוק 0?" },
+                { expr: "x + x + 2x = 44", ans: 11, hint: "נכנס את כל האיברים הדומים באגף שמאל תחילה: 1x + 1x + 2x." },
+                { expr: "\\frac{12}{x} = 3", ans: 4, hint: "חשבו בהיגיון: 12 חלקי איזה מספר שווה ל-3?" },
+                { expr: "4(x - 2) = 2x + 10", ans: 9, hint: "פתח סוגריים באגף שמאל תחילה, ולאחר מכן בצע העברת אגפים מסודרת." },
+                { expr: "\\frac{2x - 5}{3} = 5", ans: 10, hint: "הכפל ב-3 תחילה כדי לבטל את השבר, לאחר מכן הוסף 5 וחלק ב-2." },
+                { expr: "x^2 + 11 = 36", ans: 5, hint: "בודד את x בריבוע על ידי חיסור 11 משני האגפים, ואז חלץ שורש." }
+            ],
+            ar: [
+                { expr: "x + 14 = 42", ans: 28, hint: "اطرح 14 من كلا الطرفين لعزل x." },
+                { expr: "y - 37 = 61", ans: 98, hint: "أضف 37 إلى كلا الطرفين لإلغاء عملية الطرح." },
+                { expr: "8x = 72", ans: 9, hint: "اقسم كلا الطرفين على المعامل 8." },
+                { expr: "13 - m = 5", ans: 8, hint: "اعزل m. تذكر أن 13 ناقص عدد ما يساوي 5." },
+                { expr: "\\frac{x}{2} + \\frac{x}{3} = 15", ans: 18, hint: "اضرب جميع الحدود في المضاعف المشترك 6 للتخلص من الكسور." }
+            ],
+            ru: [
+                { expr: "x + 14 = 42", ans: 28, hint: "Вычтите 14 из обеих частей, чтобы изолировать x." },
+                { expr: "y - 37 = 61", ans: 98, hint: "Прибавьте 37 к обеим частям, чтобы отменить вычитание." },
+                { expr: "8x = 72", ans: 9, hint: "Разделите обе части уравнения на коэффициент 8." },
+                { expr: "\\frac{x}{2} + \\frac{x}{3} = 15", ans: 18, hint: "Умножьте все члены на общий знаменатель 6, чтобы избавиться от дробей." }
+            ]
+        };
+
+        const staticData = {
+            en: {
+                navTitle: "The World of Algebra", scoreLabel: "Score:",
+                histTitle: "🏛️ History of Algebra",
+                histText: "Algebra was invented out of pure necessity by ancient merchants and engineers. In modern mathematics, algebraic expressions are always read and solved from Left-to-Right (LTR) globally, preventing sign confusion when moving terms across the equals sign.",
+                whyTitle: "🎒 Why Do We Learn This in School?",
+                whyText: "Algebra is weightlifting for your brain. Processing terms from left to right establishes clean sequential logic and structured problem-solving skills.",
+                sampleTitle: "🌍 Left-to-Right Model Solution (Fraction Breakdown)",
+                exerciseTitle: "🧩 20 Core Algebra Challenges",
+                exerciseSubtitle: "Get a piece of paper and a pen. Work through each step from left to right to solve for the unknown variable.",
+                equationLabel: "Model Equation:", checkBtn: "Verify Answer", regenBtn: "🔄 Regenerate & New Challenges",
+                correctMsg: "✓ Correct! +1 Point added to your score.",
+                wrongPrefix: "✕ Incorrect. Get your paper out and check this step: ",
+                steps: [
+                    { label: "Step 1: Find the Least Common Multiple (LCM)", math: "\\text{LCM}(2, 3) = 6" },
+                    { label: "Step 2: Multiply the entire equation by 6 from left to right", math: "6 \\cdot \\left(\\frac{x}{2}\\right) + 6 \\cdot \\left(\\frac{x}{3}\\right) = 6 \\cdot 15 \\implies 3x + 2x = 90" },
+                    { label: "Step 3: Combine like terms", math: "5x = 90" },
+                    { label: "Step 4: Divide both sides by 5", math: "x = \\frac{90}{5} \\implies x = 18" }
+                ]
+            },
+            he: {
+                navTitle: "עולם האלגברה האלגנטי", scoreLabel: "ניקוד:",
+                histTitle: "🏛️ היסטוריה של האלגברה",
+                histText: "האלגברה הומצאה מתוך צורך קיומי של סוחרים ואסטרונומים קדמונים. חוק בל יעבור במדע המודרני הוא שנוסחאות וביטויים נפתרים תמיד משמאל לימין בכל השפות, כדי למנוע בלבול בסימנים אלגבריים וסדר פעולות.",
+                whyTitle: "🎒 למה לומדים את זה בבית הספר?",
+                whyText: "אלגברה היא אימון כושר חיוני למוח. פיתוח המשוואות משמאל לימין מרגיל את המחשבה לעבודה סדרתית, מדויקת ומאורגנת.",
+                sampleTitle: "🌍 פתרון מודל בשלבים (משמאל לימין)",
+                exerciseTitle: "🧩 20 שאלות תרגול אלגבריות אינטראקטיביות",
+                exerciseSubtitle: "קחו דף ועט. פתרו כל משוואה משמאל לימין בצורה יסודית כדי להגיע לתשובה המדויקת.",
+                equationLabel: "משוואת מודל:", checkBtn: "בדוק תשובה", regenBtn: "🔄 החלף שאלות ומצא אתגר חדש",
+                correctMsg: "✓ תשובה נכונה! קיבלת נקודה.",
+                wrongPrefix: "✕ לא מדויק. קח דף ועט ובצע את השלב הבא: ",
+                steps: [
+                    { label: "שלב 1: מציאת מכנה משותף מינימלי (LCM)", math: "\\text{LCM}(2, 3) = 6" },
+                    { label: "שלב 2: הכפלת כל המשוואה ב-6 משמאל לימין", math: "6 \\cdot \\left(\\frac{x}{2}\\right) + 6 \\cdot \\left(\\frac{x}{3}\\right) = 6 \\cdot 15 \\implies 3x + 2x = 90" },
+                    { label: "שלב 3: כינוס וחיבור איברים דומים באגף שמאל", math: "5x = 90" },
+                    { label: "שלב 4: בידוד המשתנה על ידי חלוקה ב-5", math: "x = \\frac{90}{5} \\implies x = 18" }
+                ]
+            },
+            ar: {
+                navTitle: "عالم الجبر الأنيق", scoreLabel: "النقاط:",
+                histTitle: "🏛️ تاريخ علم الجبر",
+                histText: "القاعدة الأساسية في الرياضيات الحديثة هي أن الجبر يقرأ ويحل دائماً من اليسار إلى اليمين في كل اللغات لتوحيد اتجاه العمليات وتجنب الأخطاء في الإشارات.",
+                whyTitle: "🎒 لماذا نتعلم هذا في المدرسة؟",
+                whyText: "الجبر بمثابة تدريب ورفع أثقال لعقلك. والحل المستمر من اليسار إلى اليمين ينظم التفكير التسلسلي والمنطقي.",
+                sampleTitle: "🌍 نموذج الحل من اليسار إلى اليمين (خطوة بخطوة)",
+                exerciseTitle: "🧩 20 تمرين جبري تفاعلي",
+                exerciseSubtitle: "أحضر ورقة وقلم. قم بحل كل خطوة من اليسار إلى اليمين للوصول إلى النتيجة الصحيحة.",
+                equationLabel: "المعادلة:", checkBtn: "تحقق من الإجابة", regenBtn: "🔄 توليد أسئلة جديدة",
+                correctMsg: "✓ إجابة صحية! تم إضافة نقطة.",
+                wrongPrefix: "✕ غير صحيح. خذ ورقة وقلم وراجع هذه الخطوة: ",
+                steps: [
+                    { label: "الخطوة 1: أوجد المضاعف المشترك الأصغر", math: "\\text{LCM}(2, 3) = 6" },
+                    { label: "الخطوة 2: اضرب المعادلة كاملة في 6 من اليسار إلى اليمين", math: "6 \\cdot \\left(\\frac{x}{2}\\right) + 6 \\cdot \\left(\\frac{x}{3}\\right) = 6 \\cdot 15 \\implies 3x + 2x = 90" },
+                    { label: "الخطوة 3: اجمع الحدود المتشابهة", math: "5x = 90" },
+                    { label: "الخطوة 4: اقسم الطرفين على 5 لعزل الناتج", math: "x = \\frac{90}{5} \\implies x = 18" }
+                ]
+            },
+            ru: {
+                navTitle: "Мир Элегантной Алгебры", scoreLabel: "Счет:",
+                histTitle: "🏛️ История алгебры",
+                histText: "По всему миру уравнения всегда записываются и решаются слева направо (LTR) независимо от языка текста, чтобы исключить путаницу со знаками при переносе членов.",
+                whyTitle: "🎒 Зачем мы учим это в школе?",
+                whyText: "Алгебра — это фитнес для ума. Манипуляции слева направо приучают мозг к строгому логическому порядку действий.",
+                sampleTitle: "🌍 Модельное решение слева направо",
+                exerciseTitle: "🧩 20 интерактивных задач по алгебре",
+                exerciseSubtitle: "Возьмите лист бумаги и ручку. Проработайте каждый шаг слева направо, чтобы найти неизвестную переменную.",
+                equationLabel: "Уравнение:", checkBtn: "Проверить", regenBtn: "🔄 Обновить пул вопросов",
+                correctMsg: "✓ Правильно! +1 балл добавлен к вашему счету.",
+                wrongPrefix: "✕ Неверно. Возьмите черновик и проверьте этот шаг: ",
+                steps: [
+                    { label: "Шаг 1: Найдите наименьшее общее кратное (НОК)", math: "\\text{НОК}(2, 3) = 6" },
+                    { label: "Шаг 2: Умножьте все уравнение на 6 слева направо", math: "6 \\cdot \\left(\\frac{x}{2}\\right) + 6 \\cdot \\left(\\frac{x}{3}\\right) = 6 \\cdot 15 \\implies 3x + 2x = 90" },
+                    { label: "Шаг 3: Объедините подобные члены", math: "5x = 90" },
+                    { label: "Шаг 4: Разделите обе части на 5", math: "x = \\frac{90}{5} \\implies x = 18" }
+                ]
+            }
+        };
+
+        let currentLang = 'he';
+        let currentQuestions = [];
+        let solvedQuestions = new Set();
+
+        function generateActivePool(lang) {
+            let pool = [...questionPool[lang]];
+            if (pool.length < 20) pool = [...questionPool['he']];
+            
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            return pool.slice(0, 20);
+        }
+
+        function regenerateQuestions() {
+            solvedQuestions.clear();
+            currentQuestions = generateActivePool(currentLang);
+            renderQuestionsGrid();
+            updateScoreDisplay();
+        }
+
+        function updateLangButtonsUI(activeLang) {
+            const languages = ['he', 'en', 'ar', 'ru'];
+            languages.forEach(lang => {
+                const btn = document.getElementById(`btn-lang-${lang}`);
+                if (lang === activeLang) {
+                    btn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-2xs transition cursor-pointer";
+                } else {
+                    btn.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 transition cursor-pointer";
+                }
+            });
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const data = staticData[lang];
+            
+            document.getElementById('nav-title').innerText = data.navTitle;
+            document.getElementById('score-label').innerText = data.scoreLabel;
+            document.getElementById('hist-title').innerText = data.histTitle;
+            document.getElementById('hist-text').innerText = data.histText;
+            document.getElementById('why-title').innerText = data.whyTitle;
+            document.getElementById('why-text').innerText = data.whyText;
+            document.getElementById('sample-title').innerText = data.sampleTitle;
+            document.getElementById('exercise-title').innerText = data.exerciseTitle;
+            document.getElementById('exercise-subtitle').innerText = data.exerciseSubtitle;
+            document.getElementById('regen-btn').innerText = data.regenBtn;
+
+            updateLangButtonsUI(lang);
+
+            const isRTL = (lang === 'he' || lang === 'ar');
+            document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+            document.documentElement.lang = lang;
+
+            const sampleContainer = document.getElementById('sample-container');
+            sampleContainer.innerHTML = `
+                <div class="p-3 bg-indigo-50 border-s-4 border-indigo-600 rounded mb-4 font-semibold text-sm flex items-center gap-2 justify-center" dir="ltr">
+                    <span>${data.equationLabel}</span> <span class="math-block" data-expr="\\frac{x}{2} + \\frac{x}{3} = 15"></span>
+                </div>
+            `;
+            
+            data.steps.forEach(step => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `p-3 bg-gray-50 rounded border border-gray-200 ${isRTL ? 'text-right' : 'text-left'}`;
+                stepDiv.innerHTML = `
+                    <div class="text-xs text-gray-500 font-bold mb-1">${step.label}</div>
+                    <div class="math-block text-base font-mono text-gray-800" dir="ltr" data-expr="${step.math}"></div>
+                `;
+                sampleContainer.appendChild(stepDiv);
+            });
+
+            currentQuestions = generateActivePool(lang);
+            solvedQuestions.clear();
+            renderQuestionsGrid();
+            updateScoreDisplay();
+        }
+
+        function renderQuestionsGrid() {
+            const grid = document.getElementById('questions-grid');
+            const data = staticData[currentLang];
+            grid.innerHTML = '';
+            
+            currentQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = "p-4 bg-white rounded-xl border border-gray-200 shadow-2xs flex flex-col justify-between space-y-3";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-1">
+                        <span class="text-xs font-bold text-indigo-400">#${index + 1}</span>
+                    </div>
+                    <div class="math-block text-lg font-mono text-gray-900 my-2" dir="ltr" data-expr="${q.expr}"></div>
+                    
+                    <div class="space-y-2">
+                        <input type="number" id="input-${index}" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm text-center" dir="ltr" placeholder="?">
+                        <button onclick="validateAnswer(${index}, ${q.ans}, '${q.hint.replace(/'/g, "\\'")}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 rounded-lg transition cursor-pointer">${data.checkBtn}</button>
+                    </div>
+                    <div id="feedback-${index}" class="text-xs font-medium text-center hidden p-2 rounded-lg leading-relaxed"></div>
+                `;
+                grid.appendChild(card);
+            });
+
+            if (window.katex) {
+                document.querySelectorAll('.math-block').forEach(el => {
+                    katex.render(el.getAttribute('data-expr'), el, { displayMode: true, throwOnError: false });
+                });
+            }
+        }
+
+        function validateAnswer(index, correctAnswer, hintMessage) {
+            const inputEl = document.getElementById(`input-${index}`);
+            const feedbackEl = document.getElementById(`feedback-${index}`);
+            const data = staticData[currentLang];
+            
+            const userAnswer = parseFloat(inputEl.value);
+            feedbackEl.classList.remove('hidden', 'bg-green-50', 'text-green-700', 'bg-red-50', 'text-red-700');
+
+            if (userAnswer === correctAnswer) {
+                feedbackEl.innerHTML = `
+                    <div class="font-bold text-green-800 mb-1">${data.correctMsg}</div>
+                    <div class="text-[10px] text-green-600 border-t border-green-200 pt-1 mt-1">
+                        איזנת את המשוואה וביצעת פעולות הופכיות בצורה מדויקת משמאל לימין על הדף!
+                    </div>
+                `;
+                feedbackEl.classList.add('bg-green-50', 'text-green-700');
+                feedbackEl.classList.remove('hidden');
+                solvedQuestions.add(index);
+            } else {
+                feedbackEl.innerHTML = `
+                    <div class="font-bold text-red-800 mb-1">${data.wrongPrefix}</div>
+                    <div class="text-[11px] text-red-600 border-t border-red-200 pt-1 mt-1">
+                        <strong>הרמז שלך:</strong> ${hintMessage} <br>
+                        <span class="text-gray-500 block mt-1">נסה לרשום את המשוואה בצורה אופקית משמאל לימין על הנייר, ובצע שלב אחר שלב.</span>
+                    </div>
+                `;
+                feedbackEl.classList.add('bg-red-50', 'text-red-700');
+                feedbackEl.classList.remove('hidden');
+                solvedQuestions.delete(index);
+            }
+            
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('current-score').innerText = solvedQuestions.size;
+        }
+
+        window.onload = () => {
+            changeLanguage('he');
+        };
+    </script>
+</body>
+</html>
